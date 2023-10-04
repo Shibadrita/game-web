@@ -8,6 +8,7 @@ const Navbrand = () => {
             src={'/brand.svg'}
             height={50}
             width={50}
+            alt='PlayFusion'
         />
     </Link>)
 }
