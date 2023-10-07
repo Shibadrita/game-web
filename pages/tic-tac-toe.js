@@ -39,7 +39,7 @@ const TicTacToe = () => {
         <Head>
             <title>Tic Tac Toe</title>
         </Head>
-        <GameLayout name={'Tic Tac Toe'} instruction={'Tic-tac-toe, also known as noughts and crosses, is a classic two-player game that is typically played on a 3x3 grid. The objective of the game is to be the first player to form a line of three of their symbols (either X or O) horizontally, vertically, or diagonally.'}>
+        <GameLayout name={'Tic Tac Toe'} instructions={'Tic-tac-toe, also known as noughts and crosses, is a classic two-player game that is typically played on a 3x3 grid. The objective of the game is to be the first player to form a line of three of their symbols (either X or O) horizontally, vertically, or diagonally.'}>
             <div className='flex items-center'>
                 <TTTBoard board={board} handler={stepHandler} result={result} />
                 {isTimerOn && <Timer duration={3} handler={turnOffTimerHandler} />}
