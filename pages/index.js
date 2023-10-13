@@ -1,7 +1,14 @@
+import { useEffect } from "react"
+import { useRouter } from "next/router"
 import Head from "next/head"
 import Tab from "@/components/Tab"
 
 const Home = () => {
+    const router = useRouter()
+    useEffect(() => {
+        if (!localStorage.getItem('playfusion-user')) router.replace('/auth')
+    }, [])
+
     return (<div className='h-full flex flex-col items-center'>
         <Head>
             <title>Play Fusion</title>
