@@ -7,7 +7,7 @@ export const useGet = () => {
             setIsLoading(true)
             const response = await fetch(`http://localhost:8000${url}`, {
                 headers: {
-                    'Authentication': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             })
@@ -32,7 +32,7 @@ export const usePost = () => {
                 method: 'post',
                 body: JSON.stringify(body),
                 headers: {
-                    'Authentication': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             })
