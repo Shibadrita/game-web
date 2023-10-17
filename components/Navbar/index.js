@@ -12,6 +12,7 @@ const Navbar = () => {
     useEffect(() => {
         (async () => {
             const token = localStorage.getItem('playfusion-user')
+            if (!token) return
             const { id } = jwtDecode(token)
             const { data } = await getRequest(`/users/${id}`, token)
             setUser(data.user.firstname || data.user.username)
@@ -27,7 +28,7 @@ const Navbar = () => {
             <NavLink label={'Stone Paper Scissor'} href={'/stone-paper-scissor'} />
             <NavLink label={'Snake'} href={'/snake'} />
         </div>
-        <User name={user} />
+        {user ? <User name={user} /> : <NavLink label={'Sign In'} href={'/auth'} />}
     </div>)
 }
 
