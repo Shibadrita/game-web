@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-
+import { useGet } from "@/hooks/use-http"
 import Head from "next/head"
 import MiniMax from "tic-tac-toe-minimax"
 import GameLayout from "@/components/ui/GameLayout"
@@ -23,7 +23,18 @@ const TicTacToe = () => {
         setCounter(counter => ++counter)
         setIsTimerOn(true)
     }
-
+    const [game, setGame] = useState({ name: '', instructions: '' })
+    const { getRequest } = useGet()
+    useEffect(() => {
+        (async () => {
+            const token = localStorage.getItem('playfusion-user')
+            if (!token) return
+            const { data } = await getRequest('/games/tic-tac-toe', token)
+            const { game } = data
+            console.log(data)
+            setGame(game)
+        })()
+    }, [])
     useEffect(() => {
         if (!counter) return
         setTimeout(() => {
@@ -39,7 +50,7 @@ const TicTacToe = () => {
         <Head>
             <title>Tic Tac Toe</title>
         </Head>
-        <GameLayout name={'Tic Tac Toe'} instructions={'Tic-tac-toe, also known as noughts and crosses, is a classic two-player game that is typically played on a 3x3 grid. The objective of the game is to be the first player to form a line of three of their symbols (either X or O) horizontally, vertically, or diagonally.'}>
+        <GameLayout name={game.name} instructions={game.instructions}>
             <div className='flex items-center'>
                 <TTTBoard board={board} handler={stepHandler} result={result} />
                 {isTimerOn && <Timer duration={3} handler={turnOffTimerHandler} />}
