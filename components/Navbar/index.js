@@ -24,8 +24,6 @@ const Navbar = () => {
         <div>
             <NavLink label={'Tic Tac Toe'} href={'/tic-tac-toe'} />
             <NavLink label={'Tetris'} href={'/tetris'} />
-            <NavLink label={'Quiz Game'} href={'/quiz-game'} />
-            <NavLink label={'Stone Paper Scissor'} href={'/stone-paper-scissor'} />
             <NavLink label={'Snake'} href={'/snake'} />
         </div>
         {user ? <User name={user} /> : <NavLink label={'Sign In'} href={'/auth'} />}
