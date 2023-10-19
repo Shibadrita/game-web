@@ -1,23 +1,29 @@
-import { Provider } from "react-redux"
+import { useState, useEffect } from "react"
+import { useGet } from "@/hooks/use-http"
 
 import Head from "next/head"
 import GameLayout from "@/components/ui/GameLayout"
 import SnakeBoard from "@/components/snake/SnakeBoard"
-import ScoreCard from "@/components/snake/ScoreCard"
-import store from "@/components/snake/store"
 
 const Snake = () => {
+    const [game, setGame] = useState({ name: '', instructions: '' })
+    const { getRequest } = useGet()
+    useEffect(() => {
+        (async () => {
+            const token = localStorage.getItem('playfusion-user')
+            if (!token) return
+            const { data } = await getRequest('/games/snake', token)
+            const { game } = data
+            console.log(data)
+            setGame(game)
+        })()
+    }, [])
     return (<>
         <Head>
             <title>Snake</title>
         </Head>
-        <GameLayout name={'Snake'} instructions={''}>
-            <Provider store={store}>
-                <div className='flex flex-col items-center'>
-                    <ScoreCard />
-                    <SnakeBoard height={360} width={600} />
-                </div>
-            </Provider>
+        <GameLayout name={game.name} instructions={game.instructions}>
+            <SnakeBoard />
         </GameLayout>
     </>)
 }

@@ -1,7 +1,7 @@
 import React, { memo, useEffect, useRef } from 'react';
 import { useBoard } from "./use-board";
 
-const Board = () => {
+const TetrisBoard = () => {
 
     const [display, score, onKeyDown] = useBoard();
     const eBoard = useRef();
@@ -13,10 +13,10 @@ const Board = () => {
     }
 
     return (
-        <div ref={eBoard} className='inline-block p-5 m-5 border border-slate-600' tabIndex={0} onKeyDown={onKeyDown}>
-            <div>
-                <span className='text-lg'>Score:</span>
-                <span className='text-lg'>{score.toLocaleString()}</span>
+        <div ref={eBoard} className='inline-block p-5 m-5 border border-slate-600 rounded' tabIndex={0} onKeyDown={onKeyDown}>
+            <div className='text-lg text-center mb-5'>
+                <span>Current Score: </span>
+                <span>{score.toLocaleString()}</span>
             </div>
             {display.map((row, index) => <Row row={row} key={index} />)}
         </div>
@@ -40,4 +40,4 @@ const Cell = memo(props => {
     );
 });
 
-export default memo(Board);
+export default memo(TetrisBoard);

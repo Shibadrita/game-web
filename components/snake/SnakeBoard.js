@@ -1,148 +1,136 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { increaseSnake, INCREMENT_SCORE, makeMove, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT, MOVE_UP, resetGame, RESET_SCORE, scoreUpdates, stopGame } from "./actions";
-import { clearBoard, drawObject, generateRandomPosition, hasSnakeCollided } from "./utils";
+import { useState, useEffect, useRef } from 'react';
 
-import Instructions from "./Instructions";
-
-const SnakeBoard = ({ height, width }) => {
-    const dispatch = useDispatch();
-    const snake1 = useSelector((state) => state.snake);
-    const disallowedDirection = useSelector(
-        (state) => state.disallowedDirection
-    );
-
-    const [gameEnded, setGameEnded] = useState(false);
-    const [pos, setPos] = useState(
-        generateRandomPosition(width - 20, height - 20)
-    );
-    const [isConsumed, setIsConsumed] = useState(false);
-    const canvasRef = useRef(null);
-    const [context, setContext] = useState(null);
-
-    const moveSnake = useCallback(
-        (dx = 0, dy = 0, ds) => {
-            if (dx > 0 && dy === 0 && ds !== "RIGHT") {
-                dispatch(makeMove(dx, dy, MOVE_RIGHT));
-            }
-
-            if (dx < 0 && dy === 0 && ds !== "LEFT") {
-                dispatch(makeMove(dx, dy, MOVE_LEFT));
-            }
-
-            if (dx === 0 && dy < 0 && ds !== "UP") {
-                dispatch(makeMove(dx, dy, MOVE_UP));
-            }
-
-            if (dx === 0 && dy > 0 && ds !== "DOWN") {
-                dispatch(makeMove(dx, dy, MOVE_DOWN));
-            }
-        },
-        [dispatch]
-    );
-
-    const handleKeyEvents = useCallback(
-        (event) => {
-            if (disallowedDirection) {
-                switch (event.key) {
-                    case "w":
-                        moveSnake(0, -20, disallowedDirection);
-                        break;
-                    case "s":
-                        moveSnake(0, 20, disallowedDirection);
-                        break;
-                    case "a":
-                        moveSnake(-20, 0, disallowedDirection);
-                        break;
-                    case "d":
-                        event.preventDefault();
-                        moveSnake(20, 0, disallowedDirection);
-                        break;
-                }
-            } else {
-                if (
-                    disallowedDirection !== "LEFT" &&
-                    disallowedDirection !== "UP" &&
-                    disallowedDirection !== "DOWN" &&
-                    event.key === "d"
-                )
-                    moveSnake(20, 0, disallowedDirection); //Move RIGHT at start
-            }
-        },
-        [disallowedDirection, moveSnake]
-    );
-
-    const resetBoard = useCallback(() => {
-        window.removeEventListener("keypress", handleKeyEvents);
-        dispatch(resetGame());
-        dispatch(scoreUpdates(RESET_SCORE));
-        clearBoard(context);
-        drawObject(context, snake1, "#91C483");
-        drawObject(
-            context,
-            [generateRandomPosition(width - 20, height - 20)],
-            "#676FA3"
-        ); //Draws object randomly
-        window.addEventListener("keypress", handleKeyEvents);
-    }, [context, dispatch, handleKeyEvents, height, snake1, width]);
-
-    useEffect(() => {
-        //Generate new object
-        if (isConsumed) {
-            const posi = generateRandomPosition(width - 20, height - 20);
-            setPos(posi);
-            setIsConsumed(false);
-
-            //Increase snake size when object is consumed successfully
-            dispatch(increaseSnake());
-
-            //Increment the score
-            dispatch(scoreUpdates(INCREMENT_SCORE));
+const SnakeBoard = () => {
+    const width = 10;
+    const height = 10;
+    const initialRows = [];
+    for (let i = 0; i < height; i++) {
+        initialRows.push([]);
+        for (let k = 0; k < width; k++) {
+            initialRows[i].push('blank');
         }
-    }, [isConsumed, pos, height, width, dispatch]);
+    }
 
-    useEffect(() => {
-        //Draw on canvas each time
-        setContext(canvasRef.current && canvasRef.current.getContext("2d"));
-        clearBoard(context);
-        drawObject(context, snake1, "#91C483");
-        drawObject(context, [pos], "#676FA3"); //Draws object randomly
-
-        //When the object is consumed
-        if (snake1[0].x === pos?.x && snake1[0].y === pos?.y) {
-            setIsConsumed(true);
-        }
-
-        if (
-            hasSnakeCollided(snake1, snake1[0]) ||
-            snake1[0].x >= width ||
-            snake1[0].x <= 0 ||
-            snake1[0].y <= 0 ||
-            snake1[0].y >= height
-        ) {
-            setGameEnded(true);
-            dispatch(stopGame());
-            window.removeEventListener("keypress", handleKeyEvents);
-        } else setGameEnded(false);
-    }, [context, pos, snake1, height, width, dispatch, handleKeyEvents]);
-
-    useEffect(() => {
-        window.addEventListener("keypress", handleKeyEvents);
-
-        return () => {
-            window.removeEventListener("keypress", handleKeyEvents);
+    const randomPosition = () => {
+        const position = {
+            x: Math.floor(Math.random() * width),
+            y: Math.floor(Math.random() * height)
         };
-    }, [disallowedDirection, handleKeyEvents]);
+        return position;
+    }
 
-    return (<>
-        <canvas
-            ref={canvasRef}
-            className={`border border-blue-500 dark:border-slate-200 ${gameEnded && 'border-red-500'} rounded-lg`}
-            width={width}
-            height={height}
-        />
-        <Instructions resetBoard={resetBoard} />
-    </>);
-};
+    const [rows, setRows] = useState(initialRows);
+    const [snake, setSnake] = useState([{ x: 0, y: 0 }, { x: 1, y: 0 }]);
+    const [direction, setDirection] = useState('right');
+    const [food, setFood] = useState(randomPosition);
 
-export default SnakeBoard;
+    const changeDirectionWithKeys = (e) => {
+        var { keyCode } = e;
+        switch (keyCode) {
+            case 37:
+                setDirection('left');
+                break;
+            case 38:
+                setDirection('top');
+                break;
+            case 39:
+                setDirection('right');
+                break;
+            case 40:
+                setDirection('bottom');
+                break;
+            default:
+                break;
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener("keydown", changeDirectionWithKeys, false);
+    }, [])
+
+    const displaySnake = () => {
+        const newRows = initialRows;
+        snake.forEach(cell => {
+            newRows[cell.x][cell.y] = 'snake';
+        })
+        newRows[food.x][food.y] = 'food';
+        setRows(newRows);
+    }
+
+
+    const moveSnake = () => {
+        const newSnake = [];
+        switch (direction) {
+            case 'right':
+                newSnake.push({ x: snake[0].x, y: (snake[0].y + 1) % width })
+                break;
+            case 'left':
+                newSnake.push({ x: snake[0].x, y: (snake[0].y - 1 + width) % width })
+                break;
+            case 'top':
+                newSnake.push({ x: (snake[0].x - 1 + height) % height, y: snake[0].y })
+                break;
+            case 'bottom':
+                newSnake.push({ x: (snake[0].x + 1) % height, y: snake[0].y })
+        }
+        snake.forEach(cell => {
+            newSnake.push(cell);
+        })
+        if (snake[0].x === food.x && snake[0].y === food.y) {
+            setFood(randomPosition);
+        } else {
+            newSnake.pop();
+        }
+        setSnake(newSnake);
+        displaySnake();
+    }
+
+
+    useInterval(moveSnake, 100);
+
+    function useInterval(callback, delay) {
+        const savedCallback = useRef();
+
+        // Remember the latest callback.
+        useEffect(() => {
+            savedCallback.current = callback;
+        }, [callback]);
+
+        // Set up the interval.
+        useEffect(() => {
+            function tick() {
+                savedCallback.current();
+            }
+            if (delay !== null) {
+                let id = setInterval(tick, delay);
+                return () => clearInterval(id);
+            }
+        }, [delay]);
+    }
+
+    const displayRows = rows.map(row =>
+        <li className='flex'>
+            {row.map(e => {
+                switch (e) {
+                    case 'blank':
+                        return <div className='h-10 w-10 bg-yellow-300 dark:bg-gray-500' />
+                    case 'snake':
+                        return <div className='h-10 w-10 bg-emerald-400 dark:bg-slate-800' />
+                    case 'food':
+                        return <div className='h-10 w-10 bg-red-400 dark:bg-sky-700' />
+                }
+            })
+            }
+        </li>
+    );
+
+    return (
+        <div >
+            <ul style={{ width: '500px', padding: '0px' }} class='img500'>
+                {displayRows}
+            </ul>
+        </div>
+    )
+}
+
+export default SnakeBoard
