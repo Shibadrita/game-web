@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react"
-import { useGet } from "@/hooks/use-http"
+import { useGet, usePost } from "@/hooks/use-http"
+import { catchAsync } from "@/errors/async"
+
+import jwtDecode from "jwt-decode"
 import Head from "next/head"
 import MiniMax from "tic-tac-toe-minimax"
 import GameLayout from "@/components/ui/GameLayout"
@@ -23,10 +26,12 @@ const TicTacToe = () => {
         setCounter(counter => ++counter)
         setIsTimerOn(true)
     }
+
     const [game, setGame] = useState({ name: '', instructions: '' })
     const { getRequest } = useGet()
+
     useEffect(() => {
-        (async () => {
+        catchAsync(async () => {
             const token = localStorage.getItem('playfusion-user')
             if (!token) return
             const { data } = await getRequest('/games/tic-tac-toe', token)
@@ -35,12 +40,24 @@ const TicTacToe = () => {
             setGame(game)
         })()
     }, [])
+
+    const { postRequest } = usePost()
+    const winnerHandler = catchAsync(async () => {
+        const token = localStorage.getItem('playfusion-user')
+        if (!token) return
+        const { id } = jwtDecode(token)
+        await postRequest('/plays', { gameId: game.id, userId: id, score: 100 }, token)
+    })
+
     useEffect(() => {
         if (!counter) return
         setTimeout(() => {
             const { winner, board: changed } = GameStep(board, symbols, 'Normal')
             setBoard(changed)
-            if (winner) setResult(winner)
+            if (winner) {
+                setResult(winner)
+                if(winner === 'huPlayer') winnerHandler()
+            }
         }, 3000)
     }, [counter])
 
